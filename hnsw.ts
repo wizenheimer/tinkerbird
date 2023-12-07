@@ -233,5 +233,22 @@ export class HNSW {
         };
     }
 
-    
+    static deserialize(data: any): HNSW {
+        // TODO: add zod for validation
+        const hnsw = new HNSW(data.M, data.efConstruction);
+        hnsw.levelMax = data.levelMax;
+        hnsw.entryPointId = data.entryPointId;
+        hnsw.nodes = new Map(
+            data.nodes.map(([id, node]: [number, any]) => {
+                return [
+                    id,
+                    {
+                        ...node,
+                        vector: node.vector as Array<Number>
+                    }
+                ];
+            })
+        );
+        return hnsw;
+    }
 }
