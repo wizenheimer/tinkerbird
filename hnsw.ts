@@ -179,4 +179,59 @@ export class HNSW {
         }
         return nextNode;
     }
+
+    serialize() {
+        /*
+        Sample Serialized           
+        {
+            "M": 16,
+            "efConstruction": 200,
+            "levelMax": 3,
+            "entryPointId": 1,
+            "nodes": [
+                {
+                "id": 1,
+                "level": 2,
+                "vector": [0.5, 0.3, 0.8],
+                "neighbors": [[2, 3], [4, 5], [6, 7]]
+                },
+                {
+                "id": 2,
+                "level": 1,
+                "vector": [0.2, 0.7, 0.1],
+                "neighbors": [[1, 3], [8, 9]]
+                },
+                {
+                "id": 3,
+                "level": 2,
+                "vector": [0.9, 0.4, 0.6],
+                "neighbors": [[1, 2], [10, 11], [12, 13]]
+                },
+                // ... additional nodes ...
+            ]
+        }
+        */
+        const entries = Array.from(this.nodes.entries());
+        const nodes = entries.map(([id, node]) => {
+            return [
+                id,
+                {
+                    id: node.id,
+                    level: node.level,
+                    vector: Array.from(node.vector),
+                    neighbors: node.neighbors.map((level) => Array.from(level))
+                }
+            ];
+        });
+
+        return {
+            M: this.M,
+            efConstruction: this.efConstruction,
+            levelMax: this.levelMax,
+            entryPointId: this.entryPointId,
+            node: nodes
+        };
+    }
+
+    
 }
