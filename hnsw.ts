@@ -5,6 +5,7 @@ import {
 } from "./metric";
 
 import { Node } from "./node";
+import { validate } from "./validate";
 
 type vectorReducer = (a: number[], b: number[]) => number;
 type vectorTransformer = (a: number[], b: number[]) => number[];
@@ -234,7 +235,10 @@ export class HNSW {
     }
 
     static deserialize(data: any): HNSW {
-        // TODO: add zod for validation
+        // add zod for validation
+        const result = validate(data);
+        if (!result.success) return new HNSW();
+        // deserialize json data
         const hnsw = new HNSW(data.M, data.efConstruction);
         hnsw.levelMax = data.levelMax;
         hnsw.entryPointId = data.entryPointId;
@@ -244,7 +248,7 @@ export class HNSW {
                     id,
                     {
                         ...node,
-                        vector: node.vector as Array<Number>
+                        vector: node.vector as number[]
                     }
                 ];
             })
