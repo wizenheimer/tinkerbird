@@ -94,7 +94,67 @@ export class HNSW {
         const newNode = new Node(id, this.determineLevel(), vector, this.M);
         this.nodes.set(id, newNode);
 
-        // TODO: add node to index
-        // await this.addNode(newNode);
+        // add node to index
+        await this.addNode(newNode);
+    }
+
+    async addNode(targetNode: Node) {
+        // incase this is the first node, set this as entry point and back out
+        if (this.entryPointId === -1) {
+            this.entryPointId = targetNode.id;
+            return;
+        }
+
+        // start from the entry point
+        let currNode = this.nodes.get(this.entryPointId)!;
+        let closestNode = currNode;
+
+        for (let level = this.levelMax; level >= 0; level -= 1) {
+            // find the node closest to target node in the level, excluding the currentNode
+            let nextNode = this.findNextNode(currNode, targetNode, level);
+            // incase there's a nextNode, check to see if it's closer than the closestNode
+            if (nextNode) {
+                const similarity = this.similarityFunction(
+                    targetNode.vector,
+                    nextNode.vector
+                );
+                if (
+                    similarity >
+                    this.similarityFunction(
+                        targetNode.vector,
+                        closestNode.vector
+                    )
+                ) {
+                    currNode = nextNode;
+                    closestNode = currNode;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    findNextNode(currNode: Node, targetNode: Node, level: number): Node | null {
+        let nextNode = null;
+        let maxSimilarity = -Infinity;
+
+        // traverse along the neigboring nodes of curNode
+        for (const neighborId of currNode.neighbors[level]) {
+            // lone node is the closest next node in the level
+            if (neighborId === -1) break;
+
+            // pick the neighbor node and check if it's closer
+            const neighborNode = this.nodes.get(neighborId)!;
+            const neighborSimilarity = this.similarityFunction(
+                targetNode.vector,
+                neighborNode.vector
+            );
+            // if so, make it the nextNode
+            if (neighborSimilarity > maxSimilarity) {
+                maxSimilarity = neighborSimilarity;
+                nextNode = neighborNode;
+            }
+        }
+        return nextNode;
     }
 }
