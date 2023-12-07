@@ -1,0 +1,19 @@
+{
+    "name": "tinkerbird",
+    "version": "0.0.1",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "ts-node-dev --respawn index.ts",
+        "build": "tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "github.com/wizenheimer/tinkerbird"
+    },
+    "author": "wizenheimer",
+    "license": "MIT",
+    "devDependencies": {
+        "ts-node-dev": "^2.0.0"
+    }
+}
