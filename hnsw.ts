@@ -106,6 +106,7 @@ export class HNSW {
         }
 
         // start from the entry point
+        // find the closest node to the target node
         let currNode = this.nodes.get(this.entryPointId)!;
         let closestNode = currNode;
 
@@ -131,6 +132,27 @@ export class HNSW {
                     break;
                 }
             }
+        }
+
+        // find the level that's common to closest node and target node
+        // highest level at which both are going to have neighbors
+        const commonLevel = Math.min(targetNode.level, closestNode.level);
+        for (let level = 0; level <= commonLevel; level += 1) {
+            // update the neighborhood, such that both nodes share common neighbors upto a common level
+            const addToNeighborhood = (srcNode: Node, trgNode: Node) => {
+                // filter out sentinel ids
+                srcNode.neighbors[level] = srcNode.neighbors[level].filter(
+                    (id) => id !== -1
+                );
+                // add trgNode to the neighbor
+                srcNode.neighbors[level].push(trgNode.id);
+                // incase the max neighbor are exceeded, remove the farthest
+                if (srcNode.neighbors[level].length > this.M) {
+                    srcNode.neighbors[level].pop();
+                }
+            };
+            addToNeighborhood(closestNode, targetNode);
+            addToNeighborhood(targetNode, closestNode);
         }
     }
 
