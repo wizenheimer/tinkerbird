@@ -15,7 +15,7 @@
         "build": "tsup src/*.ts",
         "lint": "tsc",
         "ci": "pnpm run lint && pnpm run test && pnpm run build",
-        "release": "pnpm run lint && pnpm run test && pnpm run build && changesets publish"
+        "release": "pnpm run lint && pnpm run test && pnpm run build && changeset publish"
     },
     "repository": {
         "type": "git",
