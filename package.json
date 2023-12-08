@@ -1,14 +1,19 @@
 {
     "name": "tinkerbird",
     "version": "0.0.1",
-    "description": "",
-    "main": "index.js",
+    "description": "Chrome Native Vector Database | Client Side Vector Search",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
     "scripts": {
-        "dev:index": "ts-node-dev --respawn ./scripts/testIndex.ts",
-        "dev:store": "ts-node-dev --respawn ./scripts/testStore.ts",
-        "build": "tsc",
-        "test:store": "tsc && browserify build/src/heap.js build/src/hnsw.js build/src/metric.js build/src/node.js build/src/store.js build/src/validate.js build/test/store.js build/test/script.js -o build/bundle.js",
-        "test:index": "tsc && browserify build/src/heap.js build/src/hnsw.js build/src/metric.js build/src/node.js build/src/store.js build/src/validate.js build/test/index.js build/test/store.js -o build/bundle.js"
+        "dev:test": "vitest",
+        "test": "vitest run",
+        "build": "tsup src/*.ts",
+        "lint": "tsc",
+        "ci": "pnpm run lint && pnpm run test && pnpm run build"
     },
     "repository": {
         "type": "git",
@@ -17,7 +22,8 @@
     "author": "wizenheimer",
     "license": "MIT",
     "devDependencies": {
-        "ts-node-dev": "^2.0.0"
+        "tsup": "^8.0.1",
+        "vitest": "^1.0.2"
     },
     "dependencies": {
         "idb": "^8.0.0",
