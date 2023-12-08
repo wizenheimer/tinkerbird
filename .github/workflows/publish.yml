@@ -1,32 +1,19 @@
 name: NPM publish
 
 on:
-    release:
-        types: [created]
+    push:
+        branches: master
 
 jobs:
-    build:
+    publish:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - uses: actions/setup-node@v3
               with:
-                  node-version: 16
-            - run: |
-                  npm i -g pnpm
-                  pnpm i
-                  pnpm run build
-
-    publish-npm:
-        needs: build
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
+                  node-version: "20"
+            - run: npm ci
+            - run: npm test
+            - uses: JS-DevTools/npm-publish@v3
               with:
-                  node-version: 16
-                  registry-url: https://registry.npmjs.org/
-            - name: Publish to npm
-              env:
-                  NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-              run: npm publish
+                  token: ${{ secrets.NPM_TOKEN }}

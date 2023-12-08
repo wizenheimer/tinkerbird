@@ -14,8 +14,7 @@
         "test": "vitest run",
         "build": "tsup src/*.ts",
         "lint": "tsc",
-        "ci": "pnpm run lint && pnpm run test && pnpm run build",
-        "release": "pnpm run lint && pnpm run test && pnpm run build && changeset publish"
+        "release": "npm run lint && npm run test && npm run build && changeset publish"
     },
     "repository": {
         "type": "git",
