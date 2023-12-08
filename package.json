@@ -4,8 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "ts-node-dev --respawn index.ts",
-        "build": "tsc"
+        "dev": "ts-node-dev --respawn ./test/index.ts",
+        "build": "tsc build/src"
     },
     "repository": {
         "type": "git",
