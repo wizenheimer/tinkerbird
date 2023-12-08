@@ -1,7 +1,7 @@
 import { HNSW } from "./hnsw";
 import { openDB, deleteDB, DBSchema, IDBPDatabase } from "idb";
 
-interface VectorSchema extends DBSchema {
+interface IndexSchema extends DBSchema {
     "hnsw-index": {
         key: string;
         value: any;
@@ -15,28 +15,28 @@ const VectorStoreIndexPurgeFailed = new Error(
 );
 
 export class VectorStore extends HNSW {
-    dbName: string;
-    db: IDBPDatabase<VectorSchema> | null = null;
+    collectionName: string;
+    collection: IDBPDatabase<IndexSchema> | null = null;
 
-    private constructor(M: number, efConstruction: number, dbName: string) {
+    private constructor(M: number, efConstruction: number, collectionName: string) {
         super(M, efConstruction);
-        this.dbName = dbName;
+        this.collectionName = collectionName;
     }
 
     static async create(
         M: number,
         efConstruction: number,
-        dbName: string
+        collectionName: string
     ): Promise<VectorStore> {
-        const instance = new VectorStore(M, efConstruction, dbName);
+        const instance = new VectorStore(M, efConstruction, collectionName);
         await instance.init();
         return instance;
     }
 
     private async init() {
-        this.db = await openDB<VectorSchema>(this.dbName, 1, {
-            upgrade(db: IDBPDatabase<VectorSchema>) {
-                db.createObjectStore("hnsw-index");
+        this.collection = await openDB<IndexSchema>(this.collectionName, 1, {
+            upgrade(collection: IDBPDatabase<IndexSchema>) {
+                collection.createObjectStore("hnsw-index");
             }
         });
     }
@@ -46,8 +46,8 @@ export class VectorStore extends HNSW {
     }
 
     async loadIndex() {
-        if (!this.db) throw VectorStoreUnintialized;
-        const loadedIndex: HNSW | undefined = await this.db.get(
+        if (!this.collection) throw VectorStoreUnintialized;
+        const loadedIndex: HNSW | undefined = await this.collection.get(
             "hnsw-index",
             "hnsw"
         );
@@ -63,15 +63,15 @@ export class VectorStore extends HNSW {
     }
 
     async saveIndex() {
-        if (!this.db) throw VectorStoreUnintialized;
-        await this.db.put("hnsw-index", this.serialize(), "hnsw");
+        if (!this.collection) throw VectorStoreUnintialized;
+        await this.collection.put("hnsw-index", this.serialize(), "hnsw");
     }
 
     async deleteIndex() {
-        if (!this.db) return VectorStoreUnintialized;
+        if (!this.collection) return VectorStoreUnintialized;
 
         try {
-            await deleteDB(this.dbName);
+            await deleteDB(this.collectionName);
             this.init();
         } catch (error) {
             throw VectorStoreIndexPurgeFailed;
