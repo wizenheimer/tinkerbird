@@ -1,12 +1,19 @@
-import { HNSW } from "./hnsw";
+import { HNSW, vectorResult } from "./hnsw";
 import { openDB, deleteDB, DBSchema, IDBPDatabase } from "idb";
-
+import { CacheOptions, Cache, VectorCache } from "./cache";
 interface IndexSchema extends DBSchema {
     "hnsw-index": {
         key: string;
         value: any;
     };
 }
+
+export type VectorStoreOptions = {
+    collectionName: string;
+    M?: number;
+    efConstruction?: number;
+    cacheOptions?: CacheOptions | null;
+};
 
 const VectorStoreUnintialized = new Error("Vector Store is uninitialized.");
 const VectorStoreIndexMissing = new Error("Vector Store Index is missing.");
@@ -17,22 +24,33 @@ const VectorStoreIndexPurgeFailed = new Error(
 export class VectorStore extends HNSW {
     collectionName: string;
     collection: IDBPDatabase<IndexSchema> | null = null;
+    cacheInstance: VectorCache | null = null;
 
     private constructor(
         M: number,
         efConstruction: number,
-        collectionName: string
+        collectionName: string,
+        cacheOptions: CacheOptions | null = null
     ) {
         super(M, efConstruction);
         this.collectionName = collectionName;
+        if (cacheOptions) {
+            this.cacheInstance = Cache.getInstance(cacheOptions);
+        }
     }
 
-    static async create(
-        collectionName: string,
-        M: number = 16,
-        efConstruction: number = 200
-    ): Promise<VectorStore> {
-        const instance = new VectorStore(M, efConstruction, collectionName);
+    static async create({
+        collectionName,
+        M = 16,
+        efConstruction = 200,
+        cacheOptions = null
+    }: VectorStoreOptions): Promise<VectorStore> {
+        const instance = new VectorStore(
+            M,
+            efConstruction,
+            collectionName,
+            cacheOptions
+        );
         await instance.init();
         return instance;
     }
@@ -80,5 +98,15 @@ export class VectorStore extends HNSW {
         } catch (error) {
             throw VectorStoreIndexPurgeFailed;
         }
+    }
+
+    query(target: number[], k: number = 3): vectorResult {
+        const cachedResult = this.cacheInstance?.get([target, k]);
+        if (cachedResult) return cachedResult;
+        return super.query(target, k);
+    }
+
+    cache(query: number[], k: number, result: vectorResult) {
+        this.cacheInstance?.set([query, k], result);
     }
 }

@@ -9,9 +9,9 @@ import { Node } from "./node";
 import { validate } from "./validate";
 import { Heap } from "./heap";
 
-type vectorReducer = (a: number[], b: number[]) => number;
-type vectorTransformer = (a: number[], b: number[]) => number[];
-type vectorResult = { id: number; score: number }[];
+export type vectorReducer = (a: number[], b: number[]) => number;
+export type vectorTransformer = (a: number[], b: number[]) => number[];
+export type vectorResult = { id: number; score: number }[];
 
 const incorrectDimension = new Error("Invalid Vector Dimension");
 
