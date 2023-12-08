@@ -3,28 +3,244 @@
 TinkerBird is a Chrome-native vector database designed for efficient storage and
 retrieval of high-dimensional vectors (embeddings). Its query engine, written in
 TypeScript, leverages HNSW (Hierarchical Navigable Small World) indexes for fast
-vector retrieval. The storage layer utilizes IndexedDB, optionally enhanced by
-an LRU cache for further optimization.
+vector retrieval. The storage layer utilizes IndexedDB, which could be extended
+with an lru-cache.
 
 One significant challenge facing large language models (LLMs) is their tendency
 to generate syntactically correct but factually inaccurate responses, a
-phenomenon known as hallucination. To address this issue, vector databases play
-a critical role by providing LLMs with access to relevant context to help it
-structure it's response. This not only improves the accuracy of LLM responses
-but also minimizes computational costs by preventing irrelevant information from
-entering the context. Additionally, vector databases ensure that LLMs are
-anchored to the required context.
+phenomenon known as hallucination. To address this issue, vector databases
+provide LLMs with relevant context to structure it's response. This not only
+improves the accuracy of LLM responses but also minimizes computational costs
+incurred by irrelevant tokens. Additionally, vector databases ensure that LLMs
+are anchored to the required context.
 
 TinkerBird disrupts traditional RAG workflows, which rely heavily on server-side
 interactions. By co-locating data and embeddings, it eliminates the roundtrip
-delay associated with server communication. With Tinkerbird, sensitive data
-remains local, benefiting from benefits of vector search, without the associated
+delays associated with client-server model. With Tinkerbird, sensitive data
+remains local, thus benefiting from vector search, without the associated
 compliance and security risks.
 
 TinkerBird uses IndexedDB as it's storage layer, which in turn builds upon Blobs
-and LevelDB storage systems. TinkerBird by using Indexeddb, benefits from it's
-adoption, stability and familiarity as native choice for offline first
+and LevelDB storage systems. By using Indexeddb, it benefits from IndexedDB's
+adoption, stability and familiarity as a native choice for offline first
 workflows.
+
+## Documentation
+
+Documentation covers the key methods and usage scenarios for the `HNSW` and
+`VectorStore` classes.
+
+### `HNSW` Class
+
+```typescript
+// Initialize HNSW index
+const hnsw = new HNSW();
+
+// Build HNSW index incrementally
+await hnsw.buildIndex(data);
+
+// Save the serialized index to a file
+const serializedIndex = hnsw.serialize();
+
+// Query Index with queryVector and kValue
+const results = hnsw.query(queryVector, kValue);
+```
+
+#### Properties:
+
+-   `metric: SimilarityMetric`: The similarity metric used in the HNSW graph.
+-   `similarityFunction: vectorReducer`: The similarity function for reducing
+    vectors.
+-   `d: number | null`: The vector dimension. It can be `null` if not specified.
+-   `M: number`: The maximum neighbor count.
+-   `efConstruction: number`: The effervescence coefficient used during
+    construction.
+-   `entryPointId: number`: The ID of the entry node in the graph.
+-   `nodes: Map<number, Node>`: A mapping of node IDs to nodes.
+-   `probs: number[]`: Probabilities for each level in the graph.
+-   `levelMax: number`: The maximum level of the graph.
+
+#### Usage:
+
+```typescript
+// Example usage of the HNSW class
+const hnsw = new HNSW();
+```
+
+### `SimilarityMetric` Enum
+
+An enumeration of similarity metrics used in the context of the HNSW class.
+
+#### Members:
+
+-   `cosine`: Represents the cosine similarity metric.
+-   `euclidean`: Represents the Euclidean similarity metric.
+
+#### Usage:
+
+```typescript
+// Example usage of the SimilarityMetric enum
+const selectedMetric: SimilarityMetric = SimilarityMetric.cosine;
+```
+
+### VectorStore API
+
+This documentation provides an overview of the `VectorStore` class, its methods,
+and usage examples. Feel free to adjust the parameters and methods as per your
+needs.
+
+The `VectorStore` class extends the HNSW class and provides functionality for
+managing a vector index, including building, loading, saving, deleting the
+index, and querying vectors. It supports caching to improve query performance.
+
+### Class: VectorStore
+
+#### Static Method: create
+
+```typescript
+static async create(options: VectorStoreOptions): Promise<VectorStore>
+```
+
+-   Creates a new instance of the `VectorStore` class.
+-   `options`: Object containing options for vector store initialization.
+    -   `collectionName`: A unique name for the vector collection.
+    -   `M`: Maximum neighbor count (default is 16).
+    -   `efConstruction`: Effervescence coefficient during construction (default
+        is 200).
+    -   `cacheOptions`: Options for caching (optional).
+
+#### Method: loadIndex
+
+```typescript
+async loadIndex(): Promise<void>
+```
+
+-   Loads the vector index from the IndexedDB database.
+
+#### Method: saveIndex
+
+```typescript
+async saveIndex(): Promise<void>
+```
+
+-   Saves the current state of the vector index to the IndexedDB database.
+
+#### Method: deleteIndex
+
+```typescript
+async deleteIndex(): Promise<void>
+```
+
+-   Deletes the vector index from the IndexedDB database.
+
+#### Method: query
+
+```typescript
+query(target: number[], k: number = 3): vectorResult
+```
+
+-   Performs a vector search on the index.
+-   `target`: The vector for which the search is performed.
+-   `k`: The number of neighbors to retrieve (default is 3).
+-   Returns: The result of the vector query.
+
+#### Method: cache
+
+```typescript
+cache(query: number[], k: number, result: vectorResult): void
+```
+
+-   Caches the result of a vector query.
+-   `query`: The vector query.
+-   `k`: The number of neighbors in the query.
+-   `result`: The result of the vector query.
+
+#### Constants:
+
+-   `VectorStoreUnintialized`: Error indicating that the vector store is
+    uninitialized.
+-   `VectorStoreIndexMissing`: Error indicating that the vector store index is
+    missing.
+-   `VectorStoreIndexPurgeFailed`: Error indicating that the vector store index
+    deletion failed.
+
+### Example Usage:
+
+```typescript
+// Create VectorStore instance
+const vectorStore = await VectorStore.create({
+    collectionName: "my-collection",
+    M: 16,
+    efConstruction: 200,
+    cacheOptions: /* cache options */
+});
+
+// Load, Save, and Delete Index
+await vectorStore.loadIndex();
+await vectorStore.saveIndex();
+await vectorStore.deleteIndex();
+
+// Perform Vector Query
+const queryVector = [/* ... */];
+const kValue = 5;
+const results = vectorStore.query(queryVector, kValue);
+
+// Cache Query Results
+vectorStore.cache(queryVector, kValue, results);
+```
+
+## CacheOptions
+
+The `CacheOptions` type defines the configuration options for caching in the
+VectorStore class.
+
+### Type: CacheOptions
+
+#### Properties:
+
+-   `max: number`: The maximum number of items that the cache can hold.
+-   `maxAge: number`: The maximum age (in milliseconds) of cached items before
+    they are considered stale.
+
+### Example:
+
+```typescript
+const cacheOptions: CacheOptions = {
+    max: 1000,
+    maxAge: 60000 // 1 minute
+};
+```
+
+---
+
+## VectorStoreOptions
+
+The `VectorStoreOptions` type defines the configuration options for initializing
+a VectorStore instance.
+
+### Type: VectorStoreOptions
+
+#### Properties:
+
+-   `collectionName: string`: A unique name for the vector collection.
+-   `M?: number`: Maximum neighbor count (default is 16).
+-   `efConstruction?: number`: Effervescence coefficient during construction
+    (default is 200).
+-   `cacheOptions?: CacheOptions | null`: Options for caching (optional).
+
+### Example:
+
+```typescript
+const vectorStoreOptions: VectorStoreOptions = {
+    collectionName: "my-collection",
+    M: 16,
+    efConstruction: 200,
+    cacheOptions: {
+        max: 1000,
+        maxAge: 60000 // 1 minute
+    }
+};
+```
 
 ## Contributing
 
@@ -54,6 +270,7 @@ should probably be working on something more productive. But hey, here we are.
 -   [Scalable Distributed Algorithm for Approximate Nearest Neighbor Search Problem in High-Dimensional General Metric Spaces](https://www.iiis.org/CDs2011/CD2011IDI/ICTA_2011/PapersPdf/CT175ON.pdf)
 -   [A Comparative Study on Hierarchical Navigable Small World Graphs](https://deepai.org/publication/a-comparative-study-on-hierarchical-navigable-small-world-graphs)
 -   [HNSW: Hierarchical Navigable Small World graphs](https://proceedings.mlr.press/v119/prokhorenkova20a/prokhorenkova20a.pdf)
+-   [HNSW Graphs](https://github.com/deepfates/hnsw/)
 -   [Hierarchical Navigable Small World graphs in FAISS](https://github.com/facebookresearch/faiss/blob/main/faiss/impl/HNSW.cpp)
 -   [A Comparative Study on Hierarchical Navigable Small World Graphs](https://escholarship.org/content/qt1rp889r9/qt1rp889r9_noSplash_7071690a1d8a4ee71eb95432887d3a8e.pdf)
 -   [Hierarchical Navigable Small World (HNSW) for ApproximateNearest Neighbor Search](https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37)
