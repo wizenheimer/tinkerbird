@@ -1,8 +1,8 @@
-import { VectorStore } from "../src/store";
-import { CacheOptions } from "../src/cache";
-import { SimilarityMetric } from "../src/metric";
+import { VectorStore } from "../../src/store";
+import { CacheOptions } from "../../src/cache";
+import { SimilarityMetric } from "../../src/metric";
 import fs from "fs/promises";
-import { HNSW } from "../src/hnsw";
+import { HNSW } from "../../src/hnsw";
 
 export const testStore = async (
     dataSizes: number[], // Vary the size of the dataset

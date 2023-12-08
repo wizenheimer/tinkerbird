@@ -1,6 +1,6 @@
-import { SimilarityMetric } from "../src/metric";
+import { SimilarityMetric } from "../../src/metric";
 import fs from "fs/promises";
-import { HNSW } from "../src/hnsw";
+import { HNSW } from "../../src/hnsw";
 
 export const testIndex = async (
     dataSizes: number[], // Vary the size of the dataset
