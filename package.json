@@ -2,6 +2,7 @@
     "name": "tinkerbird",
     "version": "0.0.1",
     "description": "Chrome Native Vector Database | Client Side Vector Search",
+    "private": false,
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -13,7 +14,8 @@
         "test": "vitest run",
         "build": "tsup src/*.ts",
         "lint": "tsc",
-        "ci": "pnpm run lint && pnpm run test && pnpm run build"
+        "ci": "pnpm run lint && pnpm run test && pnpm run build",
+        "release": "pnpm run lint && pnpm run test && pnpm run build && changesets publish"
     },
     "repository": {
         "type": "git",
@@ -22,6 +24,7 @@
     "author": "wizenheimer",
     "license": "MIT",
     "devDependencies": {
+        "@changesets/cli": "^2.27.1",
         "tsup": "^8.0.1",
         "vitest": "^1.0.2"
     },
