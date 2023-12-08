@@ -1,3 +1,4 @@
+import { number } from "zod";
 import {
     SimilarityMetric,
     cosineSimilarity,
@@ -6,9 +7,11 @@ import {
 
 import { Node } from "./node";
 import { validate } from "./validate";
+import { Heap } from "./heap";
 
 type vectorReducer = (a: number[], b: number[]) => number;
 type vectorTransformer = (a: number[], b: number[]) => number[];
+type vectorResult = { id: number; score: number }[];
 
 const incorrectDimension = new Error("Invalid Vector Dimension");
 
@@ -59,6 +62,64 @@ export class HNSW {
             level++;
         }
         return probs;
+    }
+
+    // perform vector search on the index
+    query(target: number[], k: number = 3): vectorResult {
+        const result: vectorResult = []; // storing the query result
+        const visited: Set<number> = new Set<number>(); // de duplicate candidate search
+
+        // main a heap of candidates that are ordered by similarity
+        const orderBySimilarity = (aID: number, bID: number) => {
+            const aNode = this.nodes.get(aID)!;
+            const bNode = this.nodes.get(bID)!;
+            return (
+                this.similarityFunction(target, bNode.vector) -
+                this.similarityFunction(target, aNode.vector)
+            );
+        };
+        const candidates = new Heap<number>(orderBySimilarity);
+        candidates.push(this.entryPointId);
+
+        let level = this.levelMax;
+        // do until we have required result
+        while (!candidates.isEmpty() && result.length < k) {
+            const currID = candidates.pop()!;
+            if (visited.has(currID)) continue;
+
+            visited.add(currID);
+
+            const currNode = this.nodes.get(currID)!;
+            const currSimilarity = this.similarityFunction(
+                currNode.vector,
+                target
+            );
+            if (currSimilarity > 0) {
+                result.push({
+                    id: currID,
+                    score: currSimilarity
+                });
+            }
+
+            // no more levels left to explore
+            if (currNode.level === 0) {
+                continue;
+            }
+
+            // explore the neighbors of candidates from each level
+            level = Math.min(level, currNode.level - 1);
+            for (let i = level; i >= 0; i -= 1) {
+                const neighbors = currNode.neighbors[i];
+                for (const neighborId of neighbors) {
+                    if (!visited.has(neighborId)) {
+                        candidates.push(neighborId);
+                    }
+                }
+            }
+        }
+
+        // pick the top k candidates from the result
+        return result.slice(0, k);
     }
 
     // stochastically pick a level, higher the probability greater the chances of getting picked
