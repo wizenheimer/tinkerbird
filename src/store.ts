@@ -18,15 +18,19 @@ export class VectorStore extends HNSW {
     collectionName: string;
     collection: IDBPDatabase<IndexSchema> | null = null;
 
-    private constructor(M: number, efConstruction: number, collectionName: string) {
+    private constructor(
+        M: number,
+        efConstruction: number,
+        collectionName: string
+    ) {
         super(M, efConstruction);
         this.collectionName = collectionName;
     }
 
     static async create(
-        M: number,
-        efConstruction: number,
-        collectionName: string
+        collectionName: string,
+        M: number = 16,
+        efConstruction: number = 200
     ): Promise<VectorStore> {
         const instance = new VectorStore(M, efConstruction, collectionName);
         await instance.init();

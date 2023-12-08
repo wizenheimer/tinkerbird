@@ -1,4 +1,4 @@
-import { HNSW } from "../src/hnsw";
+import { VectorStore } from "../src/store";
 import { SimilarityMetric } from "../src/metric";
 import fs from "fs/promises";
 
@@ -27,36 +27,44 @@ const runTests = async (
                         })
                     );
 
-                    const hnsw = new HNSW();
-
-                    // Measure index build time
-                    console.time("IndexBuildTime");
-                    await hnsw.buildIndex(data);
-                    console.timeEnd("IndexBuildTime");
-
-                    // Serialize the index to JSON
-                    const serializedIndex = hnsw.serialize();
-
-                    // Save the serialized index to a file (optional)
-                    await fs.writeFile(
-                        `./test/hnsw_index_${dataSize}_${dimension}_${kValue}_${similarityMetric}.json`,
-                        JSON.stringify(serializedIndex, null, 2)
+                    const vectorStore = await VectorStore.create(
+                        `hnsw_index_${dataSize}_${dimension}_${kValue}_${similarityMetric}`
                     );
 
-                    // Generate a random query vector
-                    const queryVector = Array.from({ length: dimension }, () =>
-                        Math.random()
-                    );
+                    await vectorStore.saveIndex();
 
-                    // Measure query time
-                    console.time("QueryTime");
-                    const results = hnsw.query(queryVector, kValue);
-                    console.timeEnd("QueryTime");
+                    // // Measure index build time
+                    // console.time("IndexBuildTime");
+                    // await hnsw.buildIndex(data);
+                    // console.timeEnd("IndexBuildTime");
 
-                    console.log(`Query Results:`, results);
-                    console.log("\n");
+                    // // Serialize the index to JSON
+                    // const serializedIndex = hnsw.serialize();
+
+                    // // Save the serialized index to a file (optional)
+                    // await fs.writeFile(
+                    // `./test/hnsw_index_${dataSize}_${dimension}_${kValue}_${similarityMetric}.json`,
+                    //     JSON.stringify(serializedIndex, null, 2)
+                    // );
+
+                    // // Generate a random query vector
+                    // const queryVector = Array.from({ length: dimension }, () =>
+                    //     Math.random()
+                    // );
+
+                    // // Measure query time
+                    // console.time("QueryTime");
+                    // const results = hnsw.query(queryVector, kValue);
+                    // console.timeEnd("QueryTime");
+
+                    // console.log(`Query Results:`, results);
+                    // console.log("\n");
                 }
             }
         }
     }
 };
+
+runTests([100], [5], [5], [SimilarityMetric.cosine]);
+
+console.log("Running tests");
