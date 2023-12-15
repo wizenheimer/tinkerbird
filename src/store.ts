@@ -1,8 +1,11 @@
 import { HNSW, vectorResult } from "./hnsw";
 import { openDB, deleteDB, DBSchema, IDBPDatabase } from "idb";
-import { CacheOptions, Cache, VectorCache } from "./cache";
 interface IndexSchema extends DBSchema {
-    "hnsw-index": {
+    meta: {
+        key: string;
+        value: any;
+    };
+    index: {
         key: string;
         value: any;
     };
@@ -12,7 +15,6 @@ export type VectorStoreOptions = {
     collectionName: string;
     M?: number;
     efConstruction?: number;
-    cacheOptions?: CacheOptions | null;
 };
 
 const VectorStoreUnintialized = new Error("Vector Store is uninitialized.");
@@ -24,43 +26,44 @@ const VectorStoreIndexPurgeFailed = new Error(
 export class VectorStore extends HNSW {
     collectionName: string;
     collection: IDBPDatabase<IndexSchema> | null = null;
-    cacheInstance: VectorCache | null = null;
+    // cacheInstance: VectorCache | null = null;
 
     private constructor(
         M: number,
         efConstruction: number,
-        collectionName: string,
-        cacheOptions: CacheOptions | null = null
+        collectionName: string
     ) {
         super(M, efConstruction);
         this.collectionName = collectionName;
-        if (cacheOptions) {
-            this.cacheInstance = Cache.getInstance(cacheOptions);
-        }
     }
 
     static async create({
         collectionName,
         M = 16,
-        efConstruction = 200,
-        cacheOptions = null
+        efConstruction = 200
     }: VectorStoreOptions): Promise<VectorStore> {
-        const instance = new VectorStore(
-            M,
-            efConstruction,
-            collectionName,
-            cacheOptions
-        );
+        const instance = new VectorStore(M, efConstruction, collectionName);
         await instance.init();
+        await instance.populateMeta();
         return instance;
     }
 
     private async init() {
         this.collection = await openDB<IndexSchema>(this.collectionName, 1, {
             upgrade(collection: IDBPDatabase<IndexSchema>) {
-                collection.createObjectStore("hnsw-index");
+                // TODO: populate metadata
+                collection.createObjectStore("meta");
+                collection.createObjectStore("index");
             }
         });
+    }
+
+    private async populateMeta() {
+        const collection = await openDB<IndexSchema>(this.collectionName, 1);
+        collection.add("meta", this.efConstruction, "efConstruction");
+        collection.add("meta", this.M, "neighbors");
+        collection.add("meta", this.collectionName, "collectionName");
+        collection.close();
     }
 
     async createIndex() {
@@ -68,25 +71,22 @@ export class VectorStore extends HNSW {
     }
 
     async loadIndex() {
-        if (!this.collection) throw VectorStoreUnintialized;
-        const loadedIndex: HNSW | undefined = await this.collection.get(
-            "hnsw-index",
-            "hnsw"
-        );
-
-        if (!loadedIndex) throw VectorStoreIndexMissing;
-
-        const hnsw = HNSW.deserialize(loadedIndex);
-        this.M = hnsw.M;
-        this.efConstruction = hnsw.efConstruction;
-        this.levelMax = hnsw.levelMax;
-        this.entryPointId = hnsw.entryPointId;
-        this.nodes = hnsw.nodes;
+        // TODO: implement index loading
+        throw new Error("Not implemented");
     }
 
     async saveIndex() {
         if (!this.collection) throw VectorStoreUnintialized;
-        await this.collection.put("hnsw-index", this.serialize(), "hnsw");
+        const entries = Array.from(this.nodes.entries());
+        entries.forEach(async ([id, node]) => {
+            const index = {
+                id: node.id,
+                level: node.level,
+                vector: Array.from(node.vector),
+                neighbors: node.neighbors.map((level) => Array.from(level))
+            };
+            await this.collection?.put("index", index, String(id));
+        });
     }
 
     async deleteIndex() {
@@ -101,12 +101,6 @@ export class VectorStore extends HNSW {
     }
 
     query(target: number[], k: number = 3): vectorResult {
-        const cachedResult = this.cacheInstance?.get([target, k]);
-        if (cachedResult) return cachedResult;
         return super.query(target, k);
-    }
-
-    cache(query: number[], k: number, result: vectorResult) {
-        this.cacheInstance?.set([query, k], result);
     }
 }
