@@ -1,4 +1,3 @@
-import { number } from "zod";
 import {
     SimilarityMetric,
     cosineSimilarity,
@@ -6,7 +5,6 @@ import {
 } from "./metric";
 
 import { Node } from "./node";
-import { validate } from "./validate";
 import { Heap } from "./heap";
 
 export type vectorReducer = (a: number[], b: number[]) => number;
@@ -296,9 +294,6 @@ export class HNSW {
     }
 
     static deserialize(data: any): HNSW {
-        // add zod for validation
-        const result = validate(data);
-        if (!result.success) return new HNSW();
         // deserialize json data
         const hnsw = new HNSW(data.M, data.efConstruction);
         hnsw.levelMax = data.levelMax;
