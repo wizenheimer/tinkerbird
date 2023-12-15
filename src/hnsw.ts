@@ -1,4 +1,3 @@
-import { number } from "zod";
 import {
     SimilarityMetric,
     cosineSimilarity,
