@@ -22,7 +22,7 @@ export const testIndex = async (
                         { length: dataSize },
                         (_, index) => ({
                             id: index + 1,
-                            vector: Array.from({ length: dimension }, () =>
+                            embedding: Array.from({ length: dimension }, () =>
                                 Math.random()
                             )
                         })
@@ -63,3 +63,11 @@ export const testIndex = async (
         }
     }
 };
+
+const dataSizes = [10];
+const dimensions = [128];
+const kValues = [5];
+const similarityMetric = [SimilarityMetric.cosine];
+
+console.log("loading scripts...");
+testIndex(dataSizes, dimensions, kValues, similarityMetric, true);

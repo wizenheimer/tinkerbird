@@ -4,11 +4,11 @@ import {
     euclideanSimilarity
 } from "./metric";
 
-import { Node } from "./node";
+import { Content, Node, Embedding } from "./node";
 import { Heap } from "./heap";
 
-export type vectorReducer = (a: number[], b: number[]) => number;
-export type vectorTransformer = (a: number[], b: number[]) => number[];
+export type vectorReducer = (a: Embedding, b: Embedding) => number;
+export type vectorTransformer = (a: Embedding, b: Embedding) => Embedding;
 export type vectorResult = { id: number; score: number }[];
 
 const incorrectDimension = new Error("Invalid Vector Dimension");
@@ -16,7 +16,7 @@ const incorrectDimension = new Error("Invalid Vector Dimension");
 export class HNSW {
     metric: SimilarityMetric; // similarity metric
     similarityFunction: vectorReducer; // similarity function
-    d: number | null = null; // vector dimension
+    d: number | null = null; // embedding dimension
     M: number; // maximum neighbor count
     efConstruction: number; // effervescence coefficient
     entryPointId: number; // id of entry node
@@ -63,7 +63,7 @@ export class HNSW {
     }
 
     // perform vector search on the index
-    query(target: number[], k: number = 3): vectorResult {
+    query(target: Embedding, k: number = 3): vectorResult {
         const result: vectorResult = []; // storing the query result
         const visited: Set<number> = new Set<number>(); // de duplicate candidate search
 
@@ -72,8 +72,8 @@ export class HNSW {
             const aNode = this.nodes.get(aID)!;
             const bNode = this.nodes.get(bID)!;
             return (
-                this.similarityFunction(target, bNode.vector) -
-                this.similarityFunction(target, aNode.vector)
+                this.similarityFunction(target, bNode.embedding) -
+                this.similarityFunction(target, aNode.embedding)
             );
         };
         const candidates = new Heap<number>(orderBySimilarity);
@@ -89,7 +89,7 @@ export class HNSW {
 
             const currNode = this.nodes.get(currID)!;
             const currSimilarity = this.similarityFunction(
-                currNode.vector,
+                currNode.embedding,
                 target
             );
             if (currSimilarity > 0) {
@@ -130,7 +130,9 @@ export class HNSW {
         return this.probs.length - 1;
     }
 
-    async buildIndex(data: { id: number; vector: number[] }[]) {
+    async buildIndex(
+        data: { id: number; embedding: Embedding; content?: Content }[]
+    ) {
         // reset existing index
         this.nodes.clear();
         this.levelMax = 0;
@@ -138,20 +140,26 @@ export class HNSW {
 
         // add current points into index
         data.forEach(async (item) => {
-            await this.addVector(item.id, item.vector);
+            await this.addVector(item.id, item.embedding, item.content);
         });
     }
 
-    async addVector(id: number, vector: number[]) {
+    async addVector(id: number, embedding: Embedding, content?: Content) {
         // check and initialize dimensions if needed
         if (this.d === null) {
-            this.d = vector.length;
-        } else if (vector.length !== this.d) {
+            this.d = embedding.length;
+        } else if (embedding.length !== this.d) {
             throw incorrectDimension;
         }
 
         // create and add newNode into index
-        const newNode = new Node(id, this.determineLevel(), vector, this.M);
+        const newNode = new Node(
+            id,
+            this.determineLevel(),
+            embedding,
+            this.M,
+            content
+        );
         this.nodes.set(id, newNode);
 
         // add node to index
@@ -176,14 +184,14 @@ export class HNSW {
             // incase there's a nextNode, check to see if it's closer than the closestNode
             if (nextNode) {
                 const similarity = this.similarityFunction(
-                    targetNode.vector,
-                    nextNode.vector
+                    targetNode.embedding,
+                    nextNode.embedding
                 );
                 if (
                     similarity >
                     this.similarityFunction(
-                        targetNode.vector,
-                        closestNode.vector
+                        targetNode.embedding,
+                        closestNode.embedding
                     )
                 ) {
                     currNode = nextNode;
@@ -228,8 +236,8 @@ export class HNSW {
             // pick the neighbor node and check if it's closer
             const neighborNode = this.nodes.get(neighborId)!;
             const neighborSimilarity = this.similarityFunction(
-                targetNode.vector,
-                neighborNode.vector
+                targetNode.embedding,
+                neighborNode.embedding
             );
             // if so, make it the nextNode
             if (neighborSimilarity > maxSimilarity) {
@@ -252,19 +260,19 @@ export class HNSW {
                 {
                 "id": 1,
                 "level": 2,
-                "vector": [0.5, 0.3, 0.8],
+                "embedding": [0.5, 0.3, 0.8],
                 "neighbors": [[2, 3], [4, 5], [6, 7]]
                 },
                 {
                 "id": 2,
                 "level": 1,
-                "vector": [0.2, 0.7, 0.1],
+                "embedding": [0.2, 0.7, 0.1],
                 "neighbors": [[1, 3], [8, 9]]
                 },
                 {
                 "id": 3,
                 "level": 2,
-                "vector": [0.9, 0.4, 0.6],
+                "embedding": [0.9, 0.4, 0.6],
                 "neighbors": [[1, 2], [10, 11], [12, 13]]
                 },
                 // ... additional nodes ...
@@ -277,8 +285,9 @@ export class HNSW {
                 id,
                 {
                     id: node.id,
+                    content: node.content,
                     level: node.level,
-                    vector: Array.from(node.vector),
+                    embedding: Array.from(node.embedding),
                     neighbors: node.neighbors.map((level) => Array.from(level))
                 }
             ];
@@ -304,7 +313,7 @@ export class HNSW {
                     id,
                     {
                         ...node,
-                        vector: node.vector as number[]
+                        embedding: new Float32Array(node.embedding)
                     }
                 ];
             })

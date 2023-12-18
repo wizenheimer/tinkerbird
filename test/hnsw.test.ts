@@ -9,11 +9,11 @@ describe("HNSW Test with Cosine Metric", (test) => {
 
         // Make some data
         const data = [
-            { id: 1, vector: [1, 2, 3, 4, 5] },
-            { id: 2, vector: [2, 3, 4, 5, 6] },
-            { id: 3, vector: [3, 4, 5, 6, 7] },
-            { id: 4, vector: [4, 5, 6, 7, 8] },
-            { id: 5, vector: [5, 6, 7, 8, 9] }
+            { id: 1, embedding: [1, 2, 3, 4, 5] },
+            { id: 2, embedding: [2, 3, 4, 5, 6] },
+            { id: 3, embedding: [3, 4, 5, 6, 7] },
+            { id: 4, embedding: [4, 5, 6, 7, 8] },
+            { id: 5, embedding: [5, 6, 7, 8, 9] }
         ];
 
         // Build the index
@@ -36,11 +36,11 @@ describe("HNSW Test with Euclidean Metric", (test) => {
 
         // Make some data
         const data = [
-            { id: 1, vector: [1, 2, 3, 4, 5] },
-            { id: 2, vector: [2, 3, 4, 5, 6] },
-            { id: 3, vector: [3, 4, 5, 6, 7] },
-            { id: 4, vector: [4, 5, 6, 7, 8] },
-            { id: 5, vector: [5, 6, 7, 8, 9] }
+            { id: 1, embedding: [1, 2, 3, 4, 5] },
+            { id: 2, embedding: [2, 3, 4, 5, 6] },
+            { id: 3, embedding: [3, 4, 5, 6, 7] },
+            { id: 4, embedding: [4, 5, 6, 7, 8] },
+            { id: 5, embedding: [5, 6, 7, 8, 9] }
         ];
 
         // Build the index

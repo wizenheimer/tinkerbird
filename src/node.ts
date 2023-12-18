@@ -1,18 +1,23 @@
+export type Content = string | null;
+export type Embedding = number[] | Float32Array;
 export class Node {
     id: number;
+    content: Content;
     level: number;
-    vector: number[];
+    embedding: Embedding;
     neighbors: number[][];
 
     constructor(
         id: number,
         level: number,
-        vector: number[],
-        maxNeighbors: number
+        embedding: Embedding,
+        maxNeighbors: number,
+        content: Content = null
     ) {
         this.id = id;
         this.level = level;
-        this.vector = vector;
+        this.embedding = embedding;
+        this.content = content;
 
         // fill neighbors arrays with sentinel values
         this.neighbors = Array.from(

@@ -1,6 +1,6 @@
 {
     "name": "tinkerbird",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Chrome Native Vector Database | Client Side Vector Search",
     "private": false,
     "main": "./dist/index.js",
@@ -24,6 +24,7 @@
     "license": "MIT",
     "devDependencies": {
         "@changesets/cli": "^2.27.1",
+        "@faker-js/faker": "^8.3.1",
         "tsup": "^8.0.1",
         "vitest": "^1.0.2"
     },
