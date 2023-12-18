@@ -1,5 +1,6 @@
 import { HNSW, vectorResult } from "./hnsw";
 import { openDB, deleteDB, DBSchema, IDBPDatabase } from "idb";
+import { Embedding } from "./node";
 interface IndexSchema extends DBSchema {
     meta: {
         key: string;
@@ -51,7 +52,6 @@ export class VectorStore extends HNSW {
     private async init() {
         this.collection = await openDB<IndexSchema>(this.collectionName, 1, {
             upgrade(collection: IDBPDatabase<IndexSchema>) {
-                // TODO: populate metadata
                 collection.createObjectStore("meta");
                 collection.createObjectStore("index");
             }
@@ -83,7 +83,7 @@ export class VectorStore extends HNSW {
                 id: node.id,
                 content: node.content,
                 level: node.level,
-                vector: Array.from(node.vector),
+                embedding: Array.from(node.embedding),
                 neighbors: node.neighbors.map((level) => Array.from(level))
             };
             await this.collection?.put("index", index, String(id));
@@ -101,7 +101,7 @@ export class VectorStore extends HNSW {
         }
     }
 
-    query(target: number[], k: number = 3): vectorResult {
+    query(target: Embedding, k: number = 3): vectorResult {
         return super.query(target, k);
     }
 }
