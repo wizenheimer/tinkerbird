@@ -1,6 +1,8 @@
 import { HNSW, vectorResult } from "./hnsw";
 import { openDB, deleteDB, DBSchema, IDBPDatabase } from "idb";
 import { Embedding } from "./node";
+import { VectorStoreIndexPurgeFailed, VectorStoreUnintialized } from "./errors";
+import { VectorStoreOptions } from "./options";
 interface IndexSchema extends DBSchema {
     meta: {
         key: string;
@@ -11,18 +13,6 @@ interface IndexSchema extends DBSchema {
         value: any;
     };
 }
-
-export type VectorStoreOptions = {
-    collectionName: string;
-    M?: number;
-    efConstruction?: number;
-};
-
-const VectorStoreUnintialized = new Error("Vector Store is uninitialized.");
-const VectorStoreIndexMissing = new Error("Vector Store Index is missing.");
-const VectorStoreIndexPurgeFailed = new Error(
-    "Vector Store Index can't be deleted."
-);
 
 export class VectorStore extends HNSW {
     collectionName: string;
