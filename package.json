@@ -1,6 +1,6 @@
 {
     "name": "tinkerbird",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Chrome Native Vector Database | Client Side Vector Search",
     "private": false,
     "main": "./dist/index.js",

@@ -285,6 +285,7 @@ export class HNSW {
                 id,
                 {
                     id: node.id,
+                    content: node.content,
                     level: node.level,
                     embedding: Array.from(node.embedding),
                     neighbors: node.neighbors.map((level) => Array.from(level))
@@ -312,7 +313,7 @@ export class HNSW {
                     id,
                     {
                         ...node,
-                        embedding: node.embedding as Embedding
+                        embedding: new Float32Array(node.embedding)
                     }
                 ];
             })

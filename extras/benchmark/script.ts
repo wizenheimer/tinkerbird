@@ -21,7 +21,7 @@ export const testStore = async (
                         { length: dataSize },
                         (_, index) => ({
                             id: index + 1,
-                            vector: Array.from({ length: dimension }, () =>
+                            embedding: Array.from({ length: dimension }, () =>
                                 Math.random()
                             ),
                             content: faker.hacker.phrase()
@@ -50,9 +50,9 @@ export const testStore = async (
 };
 
 // Example usage
-const dataSizes = [1000];
+const dataSizes = [10];
 const dimensions = [128];
-const kValues = [1];
+const kValues = [5];
 const similarityMetric = [SimilarityMetric.cosine];
 
 console.log("loading scripts...");

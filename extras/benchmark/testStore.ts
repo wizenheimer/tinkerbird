@@ -1,5 +1,4 @@
 import { VectorStore } from "../../src/store";
-import { CacheOptions } from "../../src/cache";
 import { SimilarityMetric } from "../../src/metric";
 import fs from "fs/promises";
 import { HNSW } from "../../src/hnsw";
@@ -9,8 +8,7 @@ export const testStore = async (
     dimensions: number[], // Vary the dimensionality of vectors
     kValues: number[], // Vary the number of neighbors to search for
     similarityMetrics: SimilarityMetric[] = [SimilarityMetric.cosine], // Similarity metrics as needed
-    checkSerialization: boolean = false,
-    cacheOptions: CacheOptions | null = null
+    checkSerialization: boolean = false
 ) => {
     for (const dataSize of dataSizes) {
         for (const dimension of dimensions) {
@@ -25,7 +23,7 @@ export const testStore = async (
                         { length: dataSize },
                         (_, index) => ({
                             id: index + 1,
-                            vector: Array.from({ length: dimension }, () =>
+                            embedding: Array.from({ length: dimension }, () =>
                                 Math.random()
                             )
                         })
@@ -66,14 +64,13 @@ export const testStore = async (
 
                     // Test VectorStore
                     const vectorStore = await VectorStore.create({
-                        collectionName: "test-collection",
-                        cacheOptions: cacheOptions
+                        collectionName: "test-collection"
                     });
 
                     // Measure index build time
                     console.time("VectorStoreIndexBuildTime");
                     for (const item of data) {
-                        await vectorStore.addVector(item.id, item.vector);
+                        await vectorStore.addVector(item.id, item.embedding);
                     }
                     console.timeEnd("VectorStoreIndexBuildTime");
 

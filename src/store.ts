@@ -56,15 +56,6 @@ export class VectorStore extends HNSW {
         collection.close();
     }
 
-    async createIndex() {
-        throw new Error("Not implemented");
-    }
-
-    async loadIndex() {
-        // TODO: implement index loading
-        throw new Error("Not implemented");
-    }
-
     async saveIndex() {
         if (!this.collection) throw VectorStoreUnintialized;
         const entries = Array.from(this.nodes.entries());
