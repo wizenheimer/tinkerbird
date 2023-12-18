@@ -1,5 +1,8 @@
+export type Content = string | null;
+
 export class Node {
     id: number;
+    content: Content;
     level: number;
     vector: number[];
     neighbors: number[][];
@@ -8,11 +11,13 @@ export class Node {
         id: number,
         level: number,
         vector: number[],
-        maxNeighbors: number
+        maxNeighbors: number,
+        content: Content = null
     ) {
         this.id = id;
         this.level = level;
         this.vector = vector;
+        this.content = content;
 
         // fill neighbors arrays with sentinel values
         this.neighbors = Array.from(

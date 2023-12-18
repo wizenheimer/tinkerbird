@@ -1,5 +1,6 @@
 import { VectorStore } from "../src/store";
 import { SimilarityMetric } from "../src/metric";
+import { faker } from "@faker-js/faker";
 
 export const testStore = async (
     dataSizes: number[], // Vary the size of the dataset
@@ -22,7 +23,8 @@ export const testStore = async (
                             id: index + 1,
                             vector: Array.from({ length: dimension }, () =>
                                 Math.random()
-                            )
+                            ),
+                            content: faker.hacker.phrase()
                         })
                     );
 
@@ -32,11 +34,12 @@ export const testStore = async (
                     });
 
                     // Measure index build time
-                    console.time("VectorStoreIndexBuildTime");
-                    for (const item of data) {
-                        await vectorStore.addVector(item.id, item.vector);
-                    }
-                    console.timeEnd("VectorStoreIndexBuildTime");
+                    // console.time("VectorStoreIndexBuildTime");
+                    vectorStore.buildIndex(data);
+                    // console.timeEnd("VectorStoreIndexBuildTime");
+                    // for (const item of data) {
+                    //     await vectorStore.addVector(item.id, item.vector);
+                    // }
 
                     // Save the index
                     await vectorStore.saveIndex();

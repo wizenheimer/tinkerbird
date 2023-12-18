@@ -81,6 +81,7 @@ export class VectorStore extends HNSW {
         entries.forEach(async ([id, node]) => {
             const index = {
                 id: node.id,
+                content: node.content,
                 level: node.level,
                 vector: Array.from(node.vector),
                 neighbors: node.neighbors.map((level) => Array.from(level))

@@ -4,7 +4,7 @@ import {
     euclideanSimilarity
 } from "./metric";
 
-import { Node } from "./node";
+import { Content, Node } from "./node";
 import { Heap } from "./heap";
 
 export type vectorReducer = (a: number[], b: number[]) => number;
@@ -130,7 +130,9 @@ export class HNSW {
         return this.probs.length - 1;
     }
 
-    async buildIndex(data: { id: number; vector: number[] }[]) {
+    async buildIndex(
+        data: { id: number; vector: number[]; content?: Content }[]
+    ) {
         // reset existing index
         this.nodes.clear();
         this.levelMax = 0;
@@ -138,11 +140,11 @@ export class HNSW {
 
         // add current points into index
         data.forEach(async (item) => {
-            await this.addVector(item.id, item.vector);
+            await this.addVector(item.id, item.vector, item.content);
         });
     }
 
-    async addVector(id: number, vector: number[]) {
+    async addVector(id: number, vector: number[], content?: Content) {
         // check and initialize dimensions if needed
         if (this.d === null) {
             this.d = vector.length;
@@ -151,7 +153,13 @@ export class HNSW {
         }
 
         // create and add newNode into index
-        const newNode = new Node(id, this.determineLevel(), vector, this.M);
+        const newNode = new Node(
+            id,
+            this.determineLevel(),
+            vector,
+            this.M,
+            content
+        );
         this.nodes.set(id, newNode);
 
         // add node to index
