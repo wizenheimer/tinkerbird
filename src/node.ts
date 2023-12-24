@@ -1,4 +1,4 @@
-export type Content = string | null;
+export type Content = string;
 export type Embedding = number[] | Float32Array;
 export class Node {
     id: number;
@@ -12,7 +12,7 @@ export class Node {
         level: number,
         embedding: Embedding,
         maxNeighbors: number,
-        content: Content = null
+        content: Content
     ) {
         this.id = id;
         this.level = level;
