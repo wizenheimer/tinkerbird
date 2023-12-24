@@ -7,3 +7,6 @@ export const VectorStoreIndexMissing = new Error(
 export const VectorStoreIndexPurgeFailed = new Error(
     "Vector Store Index can't be deleted."
 );
+export const VectorStoreRecreationFailed = new Error(
+    "Vector Store Index can't be recreated."
+);
