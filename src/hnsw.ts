@@ -9,7 +9,12 @@ import { Heap } from "./heap";
 
 export type vectorReducer = (a: Embedding, b: Embedding) => number;
 export type vectorTransformer = (a: Embedding, b: Embedding) => Embedding;
-export type vectorResult = { id: number; score: number }[];
+export type vectorResult = {
+    id: number;
+    content: Content;
+    embedding: Embedding;
+    score: number;
+}[];
 
 const incorrectDimension = new Error("Invalid Vector Dimension");
 
@@ -86,7 +91,6 @@ export class HNSW {
             if (visited.has(currID)) continue;
 
             visited.add(currID);
-
             const currNode = this.nodes.get(currID)!;
             const currSimilarity = this.similarityFunction(
                 currNode.embedding,
@@ -95,6 +99,8 @@ export class HNSW {
             if (currSimilarity > 0) {
                 result.push({
                     id: currID,
+                    content: currNode.content,
+                    embedding: currNode.embedding,
                     score: currSimilarity
                 });
             }
@@ -131,7 +137,7 @@ export class HNSW {
     }
 
     async buildIndex(
-        data: { id: number; embedding: Embedding; content?: Content }[]
+        data: { id: number; embedding: Embedding; content: Content }[]
     ) {
         // reset existing index
         this.nodes.clear();
@@ -144,7 +150,7 @@ export class HNSW {
         });
     }
 
-    async addVector(id: number, embedding: Embedding, content?: Content) {
+    async addVector(id: number, embedding: Embedding, content: Content) {
         // check and initialize dimensions if needed
         if (this.d === null) {
             this.d = embedding.length;
