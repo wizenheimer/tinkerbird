@@ -32,6 +32,8 @@ Documentation covers the key methods and usage scenarios for the `HNSW` and
 
 ### `HNSW` Class
 
+Encapsulates an in-memory implementation of HNSW index
+
 ```typescript
 // Initialize HNSW index
 const hnsw = new HNSW();
@@ -107,7 +109,18 @@ static async create(options: VectorStoreOptions): Promise<VectorStore>
     -   `M`: Maximum neighbor count (default is 16).
     -   `efConstruction`: Effervescence coefficient during construction (default
         is 200).
-    -   `cacheOptions`: Options for caching (optional).
+
+#### Static Method: recreate
+
+```typescript
+static async recreate(collectionName: string): Promise<VectorStore>
+```
+
+-   Attempts to recreate index from collection or else create a new instance of
+    the `VectorStore` class if collection doesn't exist. This has been reported
+    to result in unintended results, prefer create() instead.
+-   `options`: Object containing options for vector store initialization.
+    -   `collectionName`: A unique name for the vector collection.
 
 #### Method: loadIndex
 
@@ -115,7 +128,8 @@ static async create(options: VectorStoreOptions): Promise<VectorStore>
 async loadIndex(): Promise<void>
 ```
 
--   Loads the vector index from the IndexedDB database.
+-   Loads the vector index and meta data from the IndexedDB database. Used
+    internally to recreate index
 
 #### Method: saveIndex
 
@@ -123,7 +137,8 @@ async loadIndex(): Promise<void>
 async saveIndex(): Promise<void>
 ```
 
--   Saves the current state of the vector index to the IndexedDB database.
+-   Persists the current state of the vector index and meta data onto the
+    IndexedDB database.
 
 #### Method: deleteIndex
 
@@ -131,7 +146,8 @@ async saveIndex(): Promise<void>
 async deleteIndex(): Promise<void>
 ```
 
--   Deletes the vector index from the IndexedDB database.
+-   Deletes the persisted index and metadata from the IndexedDB and populates it
+    with an empty index and metadata
 
 #### Method: query
 
@@ -143,17 +159,6 @@ query(target: number[], k: number = 3): vectorResult
 -   `target`: The vector for which the search is performed.
 -   `k`: The number of neighbors to retrieve (default is 3).
 -   Returns: The result of the vector query.
-
-#### Method: cache
-
-```typescript
-cache(query: number[], k: number, result: vectorResult): void
-```
-
--   Caches the result of a vector query.
--   `query`: The vector query.
--   `k`: The number of neighbors in the query.
--   `result`: The result of the vector query.
 
 #### Constants:
 
@@ -171,8 +176,7 @@ cache(query: number[], k: number, result: vectorResult): void
 const vectorStore = await VectorStore.create({
     collectionName: "my-collection",
     M: 16,
-    efConstruction: 200,
-    cacheOptions: /* cache options */
+    efConstruction: 200
 });
 
 // Load, Save, and Delete Index
@@ -181,37 +185,12 @@ await vectorStore.saveIndex();
 await vectorStore.deleteIndex();
 
 // Perform Vector Query
-const queryVector = [/* ... */];
+const queryVector = [
+    /* ... */
+];
 const kValue = 5;
 const results = vectorStore.query(queryVector, kValue);
-
-// Cache Query Results
-vectorStore.cache(queryVector, kValue, results);
 ```
-
-## CacheOptions
-
-The `CacheOptions` type defines the configuration options for caching in the
-VectorStore class.
-
-### Type: CacheOptions
-
-#### Properties:
-
--   `max: number`: The maximum number of items that the cache can hold.
--   `maxAge: number`: The maximum age (in milliseconds) of cached items before
-    they are considered stale.
-
-### Example:
-
-```typescript
-const cacheOptions: CacheOptions = {
-    max: 1000,
-    maxAge: 60000 // 1 minute
-};
-```
-
----
 
 ## VectorStoreOptions
 
@@ -259,8 +238,8 @@ induced by unpredictable results. If it breaks, well, that's your problem now
 
 ## Credits
 
-TinkerBird was brought to you by a team of highly caffeinated developers who
-should probably be working on something more productive. But hey, here we are.
+TinkerBird was brought to you by an indie developer who should probably be
+working on something more productive. But hey I am.
 
 ## References
 
