@@ -9,11 +9,11 @@ describe("HNSW Test with Cosine Metric", (test) => {
 
         // Make some data
         const data = [
-            { id: 1, embedding: [1, 2, 3, 4, 5] },
-            { id: 2, embedding: [2, 3, 4, 5, 6] },
-            { id: 3, embedding: [3, 4, 5, 6, 7] },
-            { id: 4, embedding: [4, 5, 6, 7, 8] },
-            { id: 5, embedding: [5, 6, 7, 8, 9] }
+            { id: 1, content: "foo", embedding: [1, 2, 3, 4, 5] },
+            { id: 2, content: "bar", embedding: [2, 3, 4, 5, 6] },
+            { id: 3, content: "sho", embedding: [3, 4, 5, 6, 7] },
+            { id: 4, content: "que", embedding: [4, 5, 6, 7, 8] },
+            { id: 5, content: "wee", embedding: [5, 6, 7, 8, 9] }
         ];
 
         // Build the index
@@ -23,8 +23,18 @@ describe("HNSW Test with Cosine Metric", (test) => {
         const results = hnsw.query([6, 7, 8, 9, 10], 2);
 
         expect(results).toEqual([
-            { id: 1, score: 0.9649505047327671 },
-            { id: 2, score: 0.9864400504156211 }
+            {
+                id: 1,
+                content: "foo",
+                embedding: [1, 2, 3, 4, 5],
+                score: 0.9649505047327671
+            },
+            {
+                id: 2,
+                content: "bar",
+                embedding: [2, 3, 4, 5, 6],
+                score: 0.9864400504156211
+            }
         ]);
     });
 });
@@ -36,11 +46,11 @@ describe("HNSW Test with Euclidean Metric", (test) => {
 
         // Make some data
         const data = [
-            { id: 1, embedding: [1, 2, 3, 4, 5] },
-            { id: 2, embedding: [2, 3, 4, 5, 6] },
-            { id: 3, embedding: [3, 4, 5, 6, 7] },
-            { id: 4, embedding: [4, 5, 6, 7, 8] },
-            { id: 5, embedding: [5, 6, 7, 8, 9] }
+            { id: 1, content: "foo", embedding: [1, 2, 3, 4, 5] },
+            { id: 2, content: "bar", embedding: [2, 3, 4, 5, 6] },
+            { id: 3, content: "sho", embedding: [3, 4, 5, 6, 7] },
+            { id: 4, content: "que", embedding: [4, 5, 6, 7, 8] },
+            { id: 5, content: "wee", embedding: [5, 6, 7, 8, 9] }
         ];
 
         // Build the index
@@ -50,8 +60,18 @@ describe("HNSW Test with Euclidean Metric", (test) => {
         const results = hnsw.query([6, 7, 8, 9, 10], 2);
 
         expect(results).toEqual([
-            { id: 1, score: 0.08209951522176571 },
-            { id: 2, score: 0.10056040392403998 }
+            {
+                id: 1,
+                content: "foo",
+                embedding: [1, 2, 3, 4, 5],
+                score: 0.08209951522176571
+            },
+            {
+                id: 2,
+                content: "bar",
+                embedding: [2, 3, 4, 5, 6],
+                score: 0.10056040392403998
+            }
         ]);
     });
 });
