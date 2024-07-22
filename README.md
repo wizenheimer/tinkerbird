@@ -9,7 +9,7 @@ with an lru-cache.
 One significant challenge facing large language models (LLMs) is their tendency
 to generate syntactically correct but factually inaccurate responses, a
 phenomenon known as hallucination. To address this issue, vector databases
-provide LLMs with relevant context to structure it's response. This not only
+provide LLMs with relevant context to structure its response. This not only
 improves the accuracy of LLM responses but also minimizes computational costs
 incurred by irrelevant tokens. Additionally, vector databases ensure that LLMs
 are anchored to the required context.
