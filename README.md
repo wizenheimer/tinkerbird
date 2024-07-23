@@ -29,7 +29,7 @@ make are **greatly appreciated**.
 
 ## License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE.md) for more information.
 TinkerBird is provided "as is" and comes with absolutely no guarantees. We take
 no responsibility for irrelevant searches, confused users, or existential crises
 induced by unpredictable results. If it breaks, well, that's your problem now! jk.
